@@ -63,11 +63,12 @@
   <!-- GeoTIFF.js — parse GeoTIFF rasters (v3.0.5) -->
   <script src="geotiff.browser.js"></script>
   <script>
-    // ── Proxy config ───────────────────────────────────────────────────────
-    // Set PROXY_BASE_URL to your deployed proxy URL when not running locally.
-    // Leave empty to use the local proxy at http://localhost:8765
-    // Example: 'https://my-proxy.onrender.com'
-    window.PROXY_BASE_URL = '';
+    // ── API config ─────────────────────────────────────────────────────────
+    // On localhost: requests go through the local Python proxy (avoids CORS).
+    // On any other host (GitHub Pages, etc.): call the Bloonet API directly.
+    var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    window.BLOONET_API_BASE = isLocal ? '/proxy/api' : 'https://api.bloonetws.siradel.com';
+    window.BLOONET_DL_BASE  = isLocal ? '/proxy/dl'  : 'https://dl.bloonetws.siradel.com';
   </script>
   <script src="api.js"></script>
   <script type="text/babel" src="helpers.jsx"></script>

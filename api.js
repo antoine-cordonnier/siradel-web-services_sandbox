@@ -7,8 +7,8 @@
   /* ─── config ─────────────────────────────────────────────────────────── */
   var config = {
     useMock:     true,
-    apiBase:     (window.PROXY_BASE_URL || '') + '/proxy/api',
-    dlBase:      (window.PROXY_BASE_URL || '') + '/proxy/dl',
+    apiBase:     window.BLOONET_API_BASE || 'https://api.bloonetws.siradel.com',
+    dlBase:      window.BLOONET_DL_BASE  || 'https://dl.bloonetws.siradel.com',
     accessToken: '',
   };
 
