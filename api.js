@@ -9,6 +9,9 @@
     useMock:     true,
     apiBase:     window.BLOONET_API_BASE || 'https://api.bloonetws.siradel.com',
     dlBase:      window.BLOONET_DL_BASE  || 'https://dl.bloonetws.siradel.com',
+    authUrl:     window.BLOONET_AUTH_URL || 'https://keycloak.bloonetws.siradel.com/realms/volcanoweb/protocol/openid-connect/token',
+    clientId:    'volcano-web-cli',
+    tokenExpiry: 0,
     accessToken: '',
   };
 
@@ -16,8 +19,34 @@
   function isUUID(v) { return UUID_RE.test(String(v || '')); }
 
   /* ─── auth ────────────────────────────────────────────────────────────── */
+  async function fetchToken(username, password) {
+    var body = new URLSearchParams({
+      grant_type: 'password',
+      client_id:  config.clientId,
+      username:   username,
+      password:   password,
+    });
+    var res = await fetch(config.authUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    body,
+    });
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {}; });
+      throw new Error(err.error_description || err.error || 'Authentication failed (' + res.status + ')');
+    }
+    var data = await res.json();
+    config.accessToken = data.access_token;
+    config.tokenExpiry = Date.now() + (data.expires_in - 30) * 1000;
+    return config.accessToken;
+  }
+
   function getToken() {
-    if (!config.accessToken) return Promise.reject(new Error('No token set. Please sign in.'));
+    if (!config.accessToken) return Promise.reject(new Error('Not authenticated. Please sign in.'));
+    // Auto-refresh if expired and credentials are stored
+    if (config.tokenExpiry && Date.now() > config.tokenExpiry && config._username && config._password) {
+      return fetchToken(config._username, config._password);
+    }
     return Promise.resolve(config.accessToken);
   }
 
@@ -353,6 +382,14 @@
   /* ─── public API ──────────────────────────────────────────────────────── */
   var RFApi = {
     config: config,
+
+    login: async function (username, password) {
+      config._username = username;
+      config._password = password;
+      config.accessToken = '';
+      await fetchToken(username, password);
+      return true;
+    },
 
     setToken: function (token) {
       config.accessToken = (token || '').trim();

@@ -747,43 +747,49 @@ function BuyTokensModal({ onClose }) {
    LOGIN MODAL
 ═══════════════════════════════════════════════════════════════ */
 function LoginModal({ onConnect, onClose, authStatus }) {
-  const [token, setToken]     = React.useState('');
-  const [busy, setBusy]       = React.useState(false);
-  const [error, setError]     = React.useState('');
-  const [showBuy, setShowBuy] = React.useState(false);
+  const [username, setUsername] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [busy, setBusy]         = React.useState(false);
+  const [error, setError]       = React.useState('');
+  const [showBuy, setShowBuy]   = React.useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!token.trim()) { setError('Token required.'); return; }
+    if (!username.trim() || !password) { setError('Username and password required.'); return; }
     setBusy(true); setError('');
-    const ok = await onConnect(token.trim());
-    if (!ok) setError('Connection failed — token invalid or expired.');
+    const ok = await onConnect(username.trim(), password);
+    if (!ok) setError('Authentication failed — check your credentials.');
     setBusy(false);
   };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(8,11,17,0.78)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="panel" style={{ width: 400, boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}>
+      <div className="panel" style={{ width: 380, boxShadow: '0 24px 60px rgba(0,0,0,0.7)' }}>
         <div className="panel-head">
           <Icon name="radio" size={14} color="var(--accent)" />
-          <span className="title">Bloonet WS — API Token</span>
+          <span className="title">Siradel Web Services — Sign in</span>
           <div className="sp"></div>
           <button className="btn ghost sm" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={submit} style={{ padding: '18px 16px' }}>
           <div className="field">
-            <label>Bearer Token</label>
-            <textarea className="control" rows={4}
-              style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 11, lineHeight: 1.5 }}
-              value={token} onChange={(e) => setToken(e.target.value)}
-              placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9…" autoFocus />
+            <label>Username</label>
+            <input className="control" type="text" autoComplete="username"
+              value={username} onChange={(e) => setUsername(e.target.value)}
+              placeholder="your.name@siradel.com" autoFocus />
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <input className="control" type="password" autoComplete="current-password"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••" />
           </div>
           {error && <div style={{ color: 'var(--danger)', fontSize: 11.5, marginBottom: 10, fontFamily: 'var(--font-mono)' }}>{error}</div>}
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="btn ghost" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
             <button type="submit" className="btn primary" style={{ flex: 2 }} disabled={busy}>
               <Icon name={busy ? 'radio' : 'play'} size={13} />
-              {busy ? 'Connecting…' : 'Connect'}
+              {busy ? 'Signing in…' : 'Sign in'}
             </button>
           </div>
           <div style={{ marginTop: 14, padding: '10px 12px', background: 'var(--bg-2)', borderRadius: 'var(--r-md)', fontSize: 10.5, color: 'var(--text-2)', lineHeight: 1.7 }}>
