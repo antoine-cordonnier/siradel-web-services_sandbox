@@ -62,6 +62,13 @@
   <script src="proj4.js"></script>
   <!-- GeoTIFF.js — parse GeoTIFF rasters (v3.0.5) -->
   <script src="geotiff.browser.js"></script>
+  <script>
+    // ── Proxy config ───────────────────────────────────────────────────────
+    // Set PROXY_BASE_URL to your deployed proxy URL when not running locally.
+    // Leave empty to use the local proxy at http://localhost:8765
+    // Example: 'https://my-proxy.onrender.com'
+    window.PROXY_BASE_URL = '';
+  </script>
   <script src="api.js"></script>
   <script type="text/babel" src="helpers.jsx"></script>
   <script type="text/babel" src="panels.jsx"></script>

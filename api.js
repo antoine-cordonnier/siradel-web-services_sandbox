@@ -7,8 +7,8 @@
   /* ─── config ─────────────────────────────────────────────────────────── */
   var config = {
     useMock:     true,
-    apiBase:     '/proxy/api',
-    dlBase:      '/proxy/dl',
+    apiBase:     (window.PROXY_BASE_URL || '') + '/proxy/api',
+    dlBase:      (window.PROXY_BASE_URL || '') + '/proxy/dl',
     accessToken: '',
   };
 
