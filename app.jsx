@@ -72,6 +72,7 @@ function App() {
       }
       await RFApi.connect();
       log(`Connected · Bloonet WS.`, 'ok');
+      doDiscover();
       setAuthStatus('connected');
       RFApi.config.useMock = false;
       setShowLogin(false);
