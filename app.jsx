@@ -71,11 +71,11 @@ function App() {
         await RFApi.login(username, password);
       }
       await RFApi.connect();
-      log(`Connected · Bloonet WS.`, 'ok');
-      doDiscover();
-      setAuthStatus('connected');
       RFApi.config.useMock = false;
+      log(`Connected · Bloonet WS.`, 'ok');
+      setAuthStatus('connected');
       setShowLogin(false);
+      doDiscover();
       return true;
     } catch (e) {
       log('Authentication failed: ' + e.message, 'err');
