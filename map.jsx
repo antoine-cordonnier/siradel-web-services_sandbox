@@ -321,12 +321,11 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
         <div
           style={{ position: 'absolute', left: ctxMenu.x, top: ctxMenu.y, zIndex: 2000 }}
           onMouseLeave={() => setCtxMenu(null)}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="map-ctx-menu">
-            <button onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
-                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(ctxMenu.id); setCtxMenu(null); }}>
+            <button onClick={() => { onDelete && onDelete(ctxMenu.id); setCtxMenu(null); }}>
               <Icon name="trash" size={13} /> Supprimer
             </button>
           </div>
