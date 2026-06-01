@@ -144,6 +144,7 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
   const coverageBandRef = React.useRef(null);
   const [ctxMenu, setCtxMenu] = React.useState(null); // { x, y, id }
   const ctxMenuRef = React.useRef(null);
+  const ctxIdRef   = React.useRef(null); // stable ref so delete works even if state clears
   const tileRef = React.useRef(null);
   const markerLayer = React.useRef(null);
   const linkLayer = React.useRef(null);
@@ -303,8 +304,11 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
   }, [coverageVisible]);
 
 
-  // Keep ctxMenuRef in sync with state
-  React.useEffect(() => { ctxMenuRef.current = ctxMenu; }, [ctxMenu]);
+  // Keep refs in sync with state
+  React.useEffect(() => {
+    ctxMenuRef.current = ctxMenu;
+    if (ctxMenu) ctxIdRef.current = ctxMenu.id;
+  }, [ctxMenu]);
 
   // Close context menu when clicking the map
   React.useEffect(() => {
@@ -320,12 +324,16 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
       {ctxMenu && (
         <div
           style={{ position: 'absolute', left: ctxMenu.x, top: ctxMenu.y, zIndex: 2000 }}
-          onMouseLeave={() => setCtxMenu(null)}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="map-ctx-menu">
-            <button onClick={() => { onDelete && onDelete(ctxMenu.id); setCtxMenu(null); }}>
+            <button onPointerDown={(e) => {
+              e.stopPropagation();
+              const id = ctxIdRef.current;
+              setCtxMenu(null);
+              if (onDelete && id) onDelete(id);
+            }}>
               <Icon name="trash" size={13} /> Supprimer
             </button>
           </div>
