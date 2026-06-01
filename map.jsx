@@ -166,6 +166,8 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
     });
     if (mapApiRef) mapApiRef.current = map;
     setTimeout(() => map.invalidateSize(), 80);
+    // Prevent native browser context menu on the map container
+    elRef.current.addEventListener('contextmenu', (e) => e.preventDefault());
     return () => map.remove();
   }, []);
 
@@ -199,8 +201,14 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
         const m = L.marker([d.lat, d.lon], { icon, draggable: true }).addTo(layer);
         m.on('dragend', (e) => { const ll = e.target.getLatLng(); onMoveMarker(d.id, ll.lat, ll.lng); });
         m.on('click', (e) => { L.DomEvent.stopPropagation(e); onSelect(d.id); setCtxMenu(null); });
-        // Listen on the DOM element directly — more reliable than Leaflet's contextmenu event on divIcon
-        m.on('add', () => {
+        m.on('contextmenu', (e) => {
+          L.DomEvent.stopPropagation(e);
+          e.originalEvent.preventDefault();
+          const rect = elRef.current.getBoundingClientRect();
+          setCtxMenu({ x: e.originalEvent.clientX - rect.left, y: e.originalEvent.clientY - rect.top, id: d.id });
+        });
+        // Also attach directly to DOM element as fallback for divIcon
+        setTimeout(() => {
           const el = m.getElement();
           if (!el) return;
           el.addEventListener('contextmenu', (e) => {
@@ -209,7 +217,7 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
             const rect = elRef.current.getBoundingClientRect();
             setCtxMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top, id: d.id });
           });
-        });
+        }, 0);
         markersById.current[d.id] = m;
       });
     };
