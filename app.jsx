@@ -60,13 +60,18 @@ function App() {
   }, [t.showLabels, t.density]);
 
   // ---- Auth / connect
-  const doConnect = useCallback(async (username, password) => {
+  const doConnect = useCallback(async (username, password, token) => {
     setAuthStatus('connecting');
-    log(`Authenticating as ${username}…`);
     try {
-      await RFApi.login(username, password);
+      if (token) {
+        log('Setting bearer token…');
+        RFApi.setToken(token);
+      } else {
+        log(`Authenticating as ${username}…`);
+        await RFApi.login(username, password);
+      }
       await RFApi.connect();
-      log(`Connected as ${username} · Bloonet WS.`, 'ok');
+      log(`Connected · Bloonet WS.`, 'ok');
       setAuthStatus('connected');
       RFApi.config.useMock = false;
       setShowLogin(false);

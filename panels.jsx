@@ -747,18 +747,26 @@ function BuyTokensModal({ onClose }) {
    LOGIN MODAL
 ═══════════════════════════════════════════════════════════════ */
 function LoginModal({ onConnect, onClose, authStatus }) {
-  const [username, setUsername] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [busy, setBusy]         = React.useState(false);
-  const [error, setError]       = React.useState('');
-  const [showBuy, setShowBuy]   = React.useState(false);
+  const [username, setUsername]   = React.useState('');
+  const [password, setPassword]   = React.useState('');
+  const [token, setToken]         = React.useState('');
+  const [busy, setBusy]           = React.useState(false);
+  const [error, setError]         = React.useState('');
+  const [showBuy, setShowBuy]     = React.useState(false);
+  const [showToken, setShowToken] = React.useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!username.trim() || !password) { setError('Username and password required.'); return; }
     setBusy(true); setError('');
-    const ok = await onConnect(username.trim(), password);
-    if (!ok) setError('Authentication failed — check your credentials.');
+    if (showToken) {
+      if (!token.trim()) { setError('Token required.'); setBusy(false); return; }
+      const ok = await onConnect(null, null, token.trim());
+      if (!ok) setError('Token invalid or expired.');
+    } else {
+      if (!username.trim() || !password) { setError('Username and password required.'); setBusy(false); return; }
+      const ok = await onConnect(username.trim(), password);
+      if (!ok) setError('Authentication failed. If you get a CORS error, use token mode →');
+    }
     setBusy(false);
   };
 
@@ -772,18 +780,36 @@ function LoginModal({ onConnect, onClose, authStatus }) {
           <button className="btn ghost sm" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={submit} style={{ padding: '18px 16px' }}>
-          <div className="field">
-            <label>Username</label>
-            <input className="control" type="text" autoComplete="username"
-              value={username} onChange={(e) => setUsername(e.target.value)}
-              placeholder="your.name@siradel.com" autoFocus />
+          <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+            <button type="button" className={`btn sm ${!showToken ? 'primary' : 'ghost'}`} style={{ flex: 1 }} onClick={() => setShowToken(false)}>
+              Login / Password
+            </button>
+            <button type="button" className={`btn sm ${showToken ? 'primary' : 'ghost'}`} style={{ flex: 1 }} onClick={() => setShowToken(true)}>
+              Bearer Token
+            </button>
           </div>
-          <div className="field">
-            <label>Password</label>
-            <input className="control" type="password" autoComplete="current-password"
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••" />
-          </div>
+          {!showToken ? (<>
+            <div className="field">
+              <label>Username</label>
+              <input className="control" type="text" autoComplete="username"
+                value={username} onChange={(e) => setUsername(e.target.value)}
+                placeholder="your.name@siradel.com" autoFocus />
+            </div>
+            <div className="field">
+              <label>Password</label>
+              <input className="control" type="password" autoComplete="current-password"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••" />
+            </div>
+          </>) : (
+            <div className="field">
+              <label>Bearer Token</label>
+              <textarea className="control" rows={3}
+                style={{ fontFamily: 'var(--font-mono)', fontSize: 10.5, lineHeight: 1.5, resize: 'vertical' }}
+                value={token} onChange={(e) => setToken(e.target.value)}
+                placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9…" autoFocus />
+            </div>
+          )}
           {error && <div style={{ color: 'var(--danger)', fontSize: 11.5, marginBottom: 10, fontFamily: 'var(--font-mono)' }}>{error}</div>}
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="button" className="btn ghost" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
