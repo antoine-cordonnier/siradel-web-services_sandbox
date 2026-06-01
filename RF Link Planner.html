@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RF Link Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <!-- Paddle.js — replace sandbox with production URL once account is activated -->
+  <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+  <script>
+    // ── Paddle config ──────────────────────────────────────────────────────
+    // TODO: replace with your real Paddle credentials after account activation
+    window.PADDLE_CONFIG = {
+      environment: 'sandbox',
+      token:       'test_541c7b4b9bfeefdf2f3f779f077',
+      prices: [
+        { id: 'pri_01kst4wa4c0jzpnhjdw32661t9', label: '10 credits',  tokens: 10,  best: false },
+        { id: 'pri_01kst4spjfmhdtxkbncxqqfan9', label: '100 credits', tokens: 100, best: true  },
+        { id: 'pri_01kst4tsd6f0dwwdwtqqv2vxz1', label: '500 credits', tokens: 500, best: false },
+      ],
+    };
+    // Initialise Paddle
+    if (window.Paddle) {
+      try {
+        Paddle.Environment.set(window.PADDLE_CONFIG.environment);
+        Paddle.Initialize({
+          token: window.PADDLE_CONFIG.token,
+          eventCallback: function(data) {
+            console.log('[Paddle] event:', data.name, data);
+            if (data.name === 'checkout.completed') {
+              window.dispatchEvent(new CustomEvent('paddle:purchase', { detail: data.data }));
+            }
+            if (data.name === 'checkout.error') {
+              console.error('[Paddle] checkout.error:', data);
+            }
+          },
+        });
+        window.PADDLE_CONFIG._initialized = true;
+        console.log('[Paddle] initialized in', window.PADDLE_CONFIG.environment, 'mode');
+      } catch(e) {
+        console.warn('[Paddle] init error:', e.message);
+        window.PADDLE_CONFIG._error = e.message;
+      }
+    } else {
+      console.warn('[Paddle] Paddle.js not loaded');
+    }
+  </script>
+  <!-- proj4.js — coordinate reprojection (v2.20.8) -->
+  <script src="proj4.js"></script>
+  <!-- GeoTIFF.js — parse GeoTIFF rasters (v3.0.5) -->
+  <script src="geotiff.browser.js"></script>
+  <script src="api.js"></script>
+  <script type="text/babel" src="helpers.jsx"></script>
+  <script type="text/babel" src="panels.jsx"></script>
+  <script type="text/babel" src="map.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
