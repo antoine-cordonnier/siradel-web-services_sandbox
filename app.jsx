@@ -70,9 +70,8 @@ function App() {
         log(`Authenticating as ${username}…`);
         await RFApi.login(username, password);
       }
-      await RFApi.connect();
       RFApi.config.useMock = false;
-      log(`Connected · Bloonet WS.`, 'ok');
+      log(`Token set · syncing catalogs…`, 'ok');
       setAuthStatus('connected');
       setShowLogin(false);
       doDiscover();
