@@ -143,6 +143,7 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
   const coverageOverlayRef = React.useRef(null);
   const coverageBandRef = React.useRef(null);
   const [ctxMenu, setCtxMenu] = React.useState(null); // { x, y, id }
+  const ctxMenuRef = React.useRef(null);
   const tileRef = React.useRef(null);
   const markerLayer = React.useRef(null);
   const linkLayer = React.useRef(null);
@@ -160,6 +161,8 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
     markerLayer.current = L.layerGroup().addTo(map);
     linkLayer.current = L.layerGroup().addTo(map);
     map.on('click', (e) => {
+      // Ignore map clicks when context menu is open
+      if (ctxMenuRef.current) { ctxMenuRef.current = null; return; }
       if (modeRef.current === 'tx' || modeRef.current === 'rx') {
         addRef.current(modeRef.current, e.latlng.lat, e.latlng.lng);
       }
@@ -300,6 +303,9 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
   }, [coverageVisible]);
 
 
+  // Keep ctxMenuRef in sync with state
+  React.useEffect(() => { ctxMenuRef.current = ctxMenu; }, [ctxMenu]);
+
   // Close context menu when clicking the map
   React.useEffect(() => {
     const map = mapRef.current;
@@ -315,9 +321,12 @@ function MapView({ transmitters, receivers, links, basemap, mode, onAddPoint, on
         <div
           style={{ position: 'absolute', left: ctxMenu.x, top: ctxMenu.y, zIndex: 2000 }}
           onMouseLeave={() => setCtxMenu(null)}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="map-ctx-menu">
-            <button onClick={() => { onDelete && onDelete(ctxMenu.id); setCtxMenu(null); }}>
+            <button onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+                    onClick={(e) => { e.stopPropagation(); onDelete && onDelete(ctxMenu.id); setCtxMenu(null); }}>
               <Icon name="trash" size={13} /> Supprimer
             </button>
           </div>
